@@ -1,0 +1,117 @@
+export const PRIVATE_VOTING_ABI = [
+  // --- Read functions ---
+  {
+    inputs: [],
+    name: "title",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getOptions",
+    outputs: [{ internalType: "string[]", name: "", type: "string[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "optionCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "startTime",
+    outputs: [{ internalType: "uint64", name: "", type: "uint64" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "endTime",
+    outputs: [{ internalType: "uint64", name: "", type: "uint64" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "resultsPublished",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "voter", type: "address" }],
+    name: "hasVoted",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint8", name: "optionIndex", type: "uint8" }],
+    name: "getEncryptedTally",
+    outputs: [{ internalType: "euint8", name: "", type: "bytes32" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "MAX_OPTIONS",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  // --- Write functions ---
+  {
+    inputs: [
+      { internalType: "externalEuint8", name: "encryptedOption", type: "bytes32" },
+      { internalType: "bytes", name: "inputProof", type: "bytes" },
+    ],
+    name: "vote",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "publishResults",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "viewer", type: "address" }],
+    name: "grantResultAccess",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  // --- Events ---
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, internalType: "address", name: "voter", type: "address" }],
+    name: "VoteSubmitted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: "ResultsPublished",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, internalType: "address", name: "viewer", type: "address" }],
+    name: "ResultAccessGranted",
+    type: "event",
+  },
+] as const;
