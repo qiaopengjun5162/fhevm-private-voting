@@ -86,6 +86,33 @@ Tests use the fhevm **mock** environment (not a real fheVM node). Each test suit
 
 Uses `hardhat-deploy`. Scripts in `deploy/` are ordered by filename prefix (`02_deploy_voting.ts` runs after `deploy.ts`). Each script exports a `DeployFunction` with a unique `id` and `tags`. The network determines where it deploys (localhost, Sepolia).
 
+**Environment variables (.env):**
+
+Copy `.env.example` to `.env` and fill in real values. `.env` is gitignored. Priority: `process.env` > hardhat vars > defaults.
+
+Supports both **private key** (recommended) and **mnemonic**, plus direct RPC URL or Infura API key:
+
+```bash
+cp .env.example .env
+# Edit .env — at minimum set PRIVATE_KEY and SEPOLIA_RPC_URL
+# PRIVATE_KEY="0x..."          # Your wallet private key
+# SEPOLIA_RPC_URL="https://..."  # Alchemy/Infura RPC endpoint
+```
+
+**Deploy commands:**
+
+```bash
+# Local Hardhat node
+npm run chain                        # Terminal 1: start node
+npm run deploy:localhost             # Terminal 2: deploy
+
+# Sepolia testnet (requires .env with real mnemonic + Infura key)
+npm run deploy:sepolia
+
+# Verify contract on Etherscan
+npm run verify:sepolia
+```
+
 ### Hardhat tasks
 
 Tasks in `tasks/` provide CLI interaction with contracts. `task:increment` and `task:decrement` for FHECounter; `task:decrypt-count` reads the encrypted counter. Tasks require `fhevm.initializeCLIApi()` before FHE operations.
@@ -134,5 +161,18 @@ frontend/src/
 3. Results decryption: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()` → `userDecrypt()`
 
 **Network support:**
-- **Localhost (Hardhat)**: Read-only contract interaction; FHE encryption/decryption not available
+- **Localhost (Hardhat)**: Read-only contract interaction; FHE encryption/decryption not available. Mock encryption only works in tests.
 - **Sepolia**: Full functionality via `@zama-fhe/relayer-sdk` + Zama's KMS relayer
+
+### Known issues
+
+**Turbopack workspace root detection**: Repo root has `package-lock.json` (Hardhat), frontend has `bun.lock`. Turbopack auto-detects repo root as workspace root, causing CSS `@import` (tailwindcss) resolution to fail. Fixed via `resolveAlias` in `next.config.ts`:
+```ts
+turbopack: {
+  resolveAlias: { tailwindcss: require.resolve("tailwindcss") },
+}
+```
+
+**Multiple wallet extensions**: Having multiple browser wallet extensions (MetaMask + others) causes `Cannot redefine property: ethereum` errors and hydration mismatches. Disable all wallet extensions except the one being used.
+
+**Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but encrypted voting and decryption require Sepolia.
