@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { useWallet } from "@/hooks/useWallet";
 import { useNetwork } from "@/hooks/useNetwork";
 import { useContract } from "@/hooks/useContract";
@@ -18,6 +19,7 @@ import { ResultsDisplay } from "@/components/ResultsDisplay";
 export default function HomePage() {
   const wallet = useWallet();
   const network = useNetwork(wallet.provider);
+  const { theme, setTheme } = useTheme();
   const [contractAddress, setContractAddress] = useState<string | null>(null);
   const contract = useContract(contractAddress, wallet.signer ?? wallet.provider);
   const votingState = useVotingState(contract, wallet.account);
@@ -33,6 +35,13 @@ export default function HomePage() {
     <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto space-y-5 pb-16">
       {/* Header */}
       <div className="text-center space-y-3 pt-8 md:pt-12">
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="absolute top-4 right-4 p-2 rounded-full glass hover:bg-muted transition-colors"
+          aria-label="Toggle theme"
+        >
+          <span className="text-lg">{theme === "dark" ? "☀️" : "🌙"}</span>
+        </button>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight animate-text-shimmer">
           Private Voting
         </h1>
