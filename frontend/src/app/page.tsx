@@ -61,12 +61,10 @@ export default function HomePage() {
         account={wallet.account}
       />
       <ResultsDisplay
-        contract={contract}
         state={votingState.state}
         phase={votingState.phase}
         fhe={fhe}
         network={network}
-        account={wallet.account}
       />
     </div>
   );

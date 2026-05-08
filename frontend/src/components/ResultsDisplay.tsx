@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Contract } from "ethers";
 import {
   Card,
   CardContent,
@@ -15,12 +14,10 @@ import type { VotingPhase, VotingState, NetworkInfo } from "@/types";
 import type { UseFHEReturn } from "@/hooks/useFHE";
 
 interface ResultsDisplayProps {
-  contract: Contract | null;
   state: VotingState | null;
   phase: VotingPhase | null;
   fhe: UseFHEReturn;
   network: NetworkInfo;
-  account: string | null;
 }
 
 export function ResultsDisplay({
