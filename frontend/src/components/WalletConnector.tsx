@@ -2,6 +2,7 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Loader2, LogOut, Wallet } from "lucide-react";
 import { truncateAddress } from "@/lib/utils";
 import type { UseWalletReturn } from "@/hooks/useWallet";
 
@@ -32,7 +33,8 @@ export function WalletConnector({
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <Button onClick={connect} variant="outline">
+        <Button onClick={connect} variant="outline" className="w-full">
+          <Loader2 className="w-4 h-4 mr-2" />
           Retry Connection
         </Button>
       </div>
@@ -41,22 +43,42 @@ export function WalletConnector({
 
   if (account) {
     return (
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-sm" title={account}>
-          {truncateAddress(account)}
-        </span>
-        <Button variant="outline" size="sm" onClick={disconnect}>
-          Disconnect
+      <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+            <Wallet className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <div className="font-mono text-sm" title={account}>
+              {truncateAddress(account)}
+            </div>
+            <div className="text-xs text-primary/70">Connected</div>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" onClick={disconnect} className="text-muted-foreground hover:text-destructive">
+          <LogOut className="w-4 h-4" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div>
-      <Button onClick={connect} disabled={isConnecting}>
-        {isConnecting ? "Connecting..." : "Connect Wallet"}
-      </Button>
-    </div>
+    <Button
+      onClick={connect}
+      disabled={isConnecting}
+      className="w-full h-11 rounded-xl font-semibold transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,180,255,0.3)]"
+    >
+      {isConnecting ? (
+        <span className="flex items-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Connecting...
+        </span>
+      ) : (
+        <span className="flex items-center gap-2">
+          <Wallet className="w-4 h-4" />
+          Connect Wallet
+        </span>
+      )}
+    </Button>
   );
 }

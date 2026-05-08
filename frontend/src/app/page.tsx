@@ -30,15 +30,25 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Private Voting dApp</h1>
-      <p className="text-muted-foreground">
-        Confidential on-chain voting powered by Zama fhEVM.
-      </p>
+    <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto space-y-5 pb-16">
+      {/* Header */}
+      <div className="text-center space-y-3 pt-8 md:pt-12">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight animate-text-shimmer">
+          Private Voting
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Confidential on-chain voting powered by Zama fhEVM
+        </p>
+      </div>
 
-      <NetworkBanner network={network} />
-      <WalletConnector {...wallet} />
-      <ContractAddressInput onAddressChange={setContractAddress} />
+      {/* Connection Bar */}
+      <div className="glass-glow rounded-2xl px-5 py-4 space-y-3">
+        <NetworkBanner network={network} />
+        <WalletConnector {...wallet} />
+        <ContractAddressInput onAddressChange={setContractAddress} />
+      </div>
+
+      {/* Voting Metadata */}
       <VotingMetadata
         state={votingState.state}
         phase={votingState.phase}
@@ -46,14 +56,20 @@ export default function HomePage() {
         error={votingState.error}
         onRetry={votingState.refresh}
       />
-      <VoteForm
-        phase={votingState.phase}
-        hasVoted={votingState.state?.hasVoted ?? false}
-        options={votingState.state?.options ?? []}
-        contract={contract}
-        fhe={fhe}
-        network={network}
-      />
+
+      {/* Vote Form */}
+      <div className="glass-glow rounded-2xl p-5 transition-all duration-300">
+        <VoteForm
+          phase={votingState.phase}
+          hasVoted={votingState.state?.hasVoted ?? false}
+          options={votingState.state?.options ?? []}
+          contract={contract}
+          fhe={fhe}
+          network={network}
+        />
+      </div>
+
+      {/* Owner + Results */}
       <OwnerPanel
         contract={contract}
         state={votingState.state}
