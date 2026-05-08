@@ -8,42 +8,54 @@ FHE Private Voting dApp — confidential on-chain voting using Zama's fhEVM (Ful
 
 ## Commands
 
+### Contract development (root)
+
 ```bash
+# Install dependencies first
+npm install
+
 # Compile contracts (also runs typechain post-compile)
 npm run compile
+
+# Force recompile (use after clean or when artifacts are missing)
+npx hardhat compile --force
 
 # Run all tests (local fhevm mock)
 npm test
 
-# Run tests on Sepolia
-npm run test:sepolia
-
 # Run a single test file
 npx hardhat test test/PrivateVoting.ts
 
-# Lint everything (Solidity, TypeScript, Prettier)
+# Clean all build artifacts
+npx hardhat clean
+
+# Type check only
+npm run build:ts
+```
+
+### Frontend
+
+```bash
+cd frontend && npm install
+
+# Dev server (hot reload)
+cd frontend && npm run dev
+
+# Type check
+cd frontend && npx tsc --noEmit
+
+# Production build
+cd frontend && npm run build
+```
+
+### Global
+
+```bash
+# Lint everything
 npm run lint
 
 # Format code
 npm run prettier:write
-
-# Start a local Hardhat node (no deploy)
-npm run chain
-
-# Deploy to localhost (requires a running node)
-npm run deploy:localhost
-
-# Deploy to Sepolia
-npm run deploy:sepolia
-
-# Generate TypeChain type bindings
-npm run typechain
-
-# Clean all build artifacts
-npm run clean
-
-# Set required config vars (MNEMONIC, INFURA_API_KEY, ETHERSCAN_API_KEY)
-npx hardhat vars setup
 ```
 
 ## Architecture
@@ -79,3 +91,46 @@ Tasks in `tasks/` provide CLI interaction with contracts. `task:increment` and `
 ### TypeChain
 
 Contract ABIs are auto-converted to typed ethers.js v6 bindings in `types/`. After compilation, `npm run typechain` regenerates these. Import types as `import { PrivateVoting__factory } from "../types"`.
+
+**Note:** `types/` is gitignored — generated on `npm run compile`. If `npx hardhat compile` says "Nothing to compile", use `--force`.
+
+### Frontend (Next.js 16)
+
+Tech stack: Next.js 16 + React 19 + ethers.js v6 + shadcn/ui + Tailwind CSS 4 + @zama-fhe/relayer-sdk
+
+```
+frontend/src/
+  app/
+    layout.tsx          — Root layout with Geist font, Toaster
+    page.tsx            — Main page, composes all components
+  hooks/
+    useWallet.ts        — MetaMask connect/disconnect/accountsChanged
+    useNetwork.ts       — chain ID detection, read-only vs Sepolia
+    useContract.ts      — ethers.js Contract instance from address + signer
+    useVotingState.ts   — Fetches + polls voting metadata/phase
+    useFHE.ts           — Lazy-loads @zama-fhe/relayer-sdk, encrypt/decrypt
+  components/
+    WalletConnector.tsx
+    NetworkBanner.tsx
+    ContractAddressInput.tsx
+    VotingMetadata.tsx      — Title, options, timestamps, phase badge
+    PhaseBadge.tsx
+    VoteForm.tsx            — Radio selection + encrypt + submit tx
+    OwnerPanel.tsx          — publishResults() + grantResultAccess()
+    ResultsDisplay.tsx      — Decrypt tallies and show bar chart
+  lib/
+    abi.ts              — Full PrivateVoting ABI (hand-written for ethers v6)
+    config.ts           — Chain IDs, relayer URL, storage keys, poll interval
+    utils.ts            — cn(), truncateAddress(), formatTimestamp(), computePhase()
+  types/
+    index.ts            — VotingState, WalletState, NetworkInfo, EncryptResult
+```
+
+**FHE flow on Sepolia:**
+1. User selects option → `useFHE.encryptVote(index)` → lazily loads `@zama-fhe/relayer-sdk/web`, calls `createEncryptedInput(contractAddr, userAddr).add8(index).encrypt()`
+2. Returns `{handles, inputProof}` → passed to `contract.vote(handles[0], inputProof)`
+3. Results decryption: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()` → `userDecrypt()`
+
+**Network support:**
+- **Localhost (Hardhat)**: Read-only contract interaction; FHE encryption/decryption not available
+- **Sepolia**: Full functionality via `@zama-fhe/relayer-sdk` + Zama's KMS relayer
