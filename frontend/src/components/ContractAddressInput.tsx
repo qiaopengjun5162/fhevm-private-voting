@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { STORAGE_KEYS } from "@/lib/config";
+import { truncateAddress } from "@/lib/utils";
+import { Check, Copy, Pencil } from "lucide-react";
 
 interface ContractAddressInputProps {
   onAddressChange: (address: string | null) => void;
@@ -16,8 +18,8 @@ export function ContractAddressInput({ onAddressChange }: ContractAddressInputPr
   const [loadedAddress, setLoadedAddress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // Restore saved address on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.contractAddress);
     if (saved && isAddress(saved)) {
@@ -47,10 +49,11 @@ export function ContractAddressInput({ onAddressChange }: ContractAddressInputPr
     onAddressChange(trimmed);
   };
 
-  const handleChange = () => {
-    setIsEditing(true);
-    setLoadedAddress(null);
-    onAddressChange(null);
+  const handleCopy = async () => {
+    if (!loadedAddress) return;
+    await navigator.clipboard.writeText(loadedAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,11 +64,35 @@ export function ContractAddressInput({ onAddressChange }: ContractAddressInputPr
 
   if (loadedAddress && !isEditing) {
     return (
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-sm truncate" title={loadedAddress}>
-          Contract: {loadedAddress}
-        </span>
-        <Button variant="outline" size="sm" onClick={handleChange}>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 min-w-0">
+          <span className="text-xs text-muted-foreground shrink-0">Contract</span>
+          <span
+            className="font-mono font-bold text-sm text-primary truncate cursor-pointer hover:underline"
+            title={loadedAddress}
+            onClick={handleCopy}
+          >
+            {loadedAddress}
+          </span>
+          <button
+            onClick={handleCopy}
+            className="shrink-0 p-1 rounded hover:bg-primary/10 transition-colors"
+            title="Copy address"
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-green-400" />
+            ) : (
+              <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+            )}
+          </button>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => { setIsEditing(true); setLoadedAddress(null); onAddressChange(null); }}
+          className="shrink-0 gap-1.5 px-4 h-10 font-medium"
+        >
+          <Pencil className="w-3.5 h-3.5" />
           Change
         </Button>
       </div>
@@ -85,7 +112,9 @@ export function ContractAddressInput({ onAddressChange }: ContractAddressInputPr
           onKeyDown={handleKeyDown}
           className={error ? "border-red-500" : ""}
         />
-        <Button onClick={handleLoad}>Load Contract</Button>
+        <Button onClick={handleLoad} className="shrink-0 font-semibold">
+          Load
+        </Button>
       </div>
       {error && (
         <Alert variant="destructive">
