@@ -29,6 +29,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
         <div className="bg-orbs" />
+        <div className="bg-dots" />
         <div className="relative z-10">
           {children}
         </div>

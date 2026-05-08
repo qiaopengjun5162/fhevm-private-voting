@@ -208,8 +208,11 @@
 .bg-orbs {
   position: fixed;
   inset: 0;
-  overflow: hidden;
   pointer-events: none;
+  z-index: 0;
+  --orb-1: oklch(0.65 0.2 220);
+  --orb-2: oklch(0.55 0.18 260);
+  --orb-3: oklch(0.6 0.15 180);
 }
 
 .bg-orbs::before,
@@ -217,24 +220,40 @@
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.4;
+  filter: blur(100px);
 }
 
 .bg-orbs::before {
-  width: 70vw;
-  height: 70vw;
-  background: radial-gradient(circle, oklch(0.65 0.18 220 / 30%), transparent 70%);
-  top: -20%;
-  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 800px;
+  max-height: 800px;
+  background: radial-gradient(circle, var(--orb-1) 0%, transparent 70%);
+  opacity: 0.25;
+  top: -15%;
+  left: 10%;
   animation: orb-drift-1 20s ease-in-out infinite;
 }
 
 .bg-orbs::after {
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, oklch(0.5 0.15 250 / 25%), transparent 70%);
+  width: 45vw;
+  height: 45vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, var(--orb-2) 0%, transparent 70%);
+  opacity: 0.2;
   bottom: -10%;
-  right: -5%;
+  right: 5%;
   animation: orb-drift-2 25s ease-in-out infinite;
+}
+
+/* Subtle dot pattern overlay */
+.bg-dots {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+  background-image: radial-gradient(circle, oklch(1 0 0 / 80%) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
