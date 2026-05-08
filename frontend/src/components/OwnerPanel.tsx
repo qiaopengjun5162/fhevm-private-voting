@@ -92,8 +92,8 @@ export function OwnerPanel({ contract, state, phase, account }: OwnerPanelProps)
               </Alert>
             )}
             {pubSuccess && (
-              <Alert className="border-green-500 bg-green-50">
-                <AlertDescription>Results published successfully.</AlertDescription>
+              <Alert className="border-green-500/30 bg-green-500/10">
+                <AlertDescription className="text-green-400">Results published successfully.</AlertDescription>
               </Alert>
             )}
           </div>
@@ -130,8 +130,8 @@ export function OwnerPanel({ contract, state, phase, account }: OwnerPanelProps)
                 </Alert>
               )}
               {grantSuccess && (
-                <Alert className="border-green-500 bg-green-50">
-                  <AlertDescription>Access granted successfully.</AlertDescription>
+                <Alert className="border-green-500/30 bg-green-500/10">
+                  <AlertDescription className="text-green-400">Access granted successfully.</AlertDescription>
                 </Alert>
               )}
             </div>

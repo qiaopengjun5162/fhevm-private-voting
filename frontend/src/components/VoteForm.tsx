@@ -142,7 +142,7 @@ export function VoteForm({
         <div className="flex items-center justify-center gap-3 py-4 mb-4">
           <div className="relative">
             <div className="w-10 h-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-            <Shield className="absolute inset-0 m-auto w-4 h-4 text-primary animate-encrypt-spin" />
+            <Shield className="absolute inset-0 m-auto w-4 h-4 text-primary" />
           </div>
           <span className="text-sm text-muted-foreground">{VOTE_STATUS_LABELS[status]}</span>
         </div>
