@@ -159,9 +159,16 @@ export function useFHE(
         DECRYPT_AUTH_DURATION_DAYS
       );
 
+      // ethers.js v6 requires exactly EIP712Domain + one primary type.
+      // The SDK may return extra types which cause "ambiguous primary types".
+      const types = {
+        EIP712Domain: eip712.types.EIP712Domain,
+        UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification,
+      };
+
       const signature = await signer.signTypedData(
         eip712.domain as Parameters<JsonRpcSigner["signTypedData"]>[0],
-        eip712.types as Parameters<JsonRpcSigner["signTypedData"]>[1],
+        types as Parameters<JsonRpcSigner["signTypedData"]>[1],
         eip712.message as Parameters<JsonRpcSigner["signTypedData"]>[2]
       );
 
