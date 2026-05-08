@@ -8,7 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // 投票参数
     const title = "My First Private Voting"
     const options = ["Option A", "Option B", "Option C"]
-    const durationInMinutes = 10 // 投票持续10分钟
+    const durationInMinutes = 120 // 投票持续120分钟，方便测试
 
     // 计算结束时间（当前时间 + 持续时间）
     const startTime = Math.floor(Date.now() / 1000) // 当前秒数

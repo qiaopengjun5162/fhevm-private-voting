@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { BrowserProvider, JsonRpcSigner } from "ethers";
-import { SEPOLIA_RELAYER_URL, DECRYPT_AUTH_DURATION_DAYS } from "@/lib/config";
+import { getAddress, type BrowserProvider, type JsonRpcSigner } from "ethers";
+import { DECRYPT_AUTH_DURATION_DAYS } from "@/lib/config";
 import type { NetworkInfo, EncryptResult } from "@/types";
 
 type UserDecryptClear = bigint | boolean | number;
@@ -103,7 +103,6 @@ export function useFHE(
       await initSDK();
       const instance = (await createInstance({
         ...SepoliaConfig,
-        relayerUrl: SEPOLIA_RELAYER_URL,
         network: ethereum,
       })) as FhevmInstance;
       instanceRef.current = instance;
@@ -125,9 +124,10 @@ export function useFHE(
         throw new Error("Wallet not connected or contract not loaded.");
       }
 
+      const userAddress = getAddress(account);
       const instance = await getInstance();
       const encrypted = await instance
-        .createEncryptedInput(contractAddress, account)
+        .createEncryptedInput(contractAddress, userAddress)
         .add8(optionIndex)
         .encrypt();
       return {
@@ -148,6 +148,7 @@ export function useFHE(
         return 0;
       }
 
+      const userAddress = getAddress(account);
       const instance = await getInstance();
       const keypair = instance.generateKeypair();
       const startTimestamp = Math.floor(Date.now() / 1000);
@@ -170,7 +171,7 @@ export function useFHE(
         keypair.publicKey,
         signature,
         [contractAddress],
-        account,
+        userAddress,
         startTimestamp,
         DECRYPT_AUTH_DURATION_DAYS
       );

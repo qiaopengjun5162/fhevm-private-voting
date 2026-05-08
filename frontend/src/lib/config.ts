@@ -3,8 +3,6 @@ export const CHAIN_IDS = {
   sepolia: BigInt(11155111),
 } as const;
 
-export const SEPOLIA_RELAYER_URL = "https://kms.sepolia.zama.ai/";
-
 export const STORAGE_KEYS = {
   contractAddress: "private_voting_contract_address",
 } as const;
