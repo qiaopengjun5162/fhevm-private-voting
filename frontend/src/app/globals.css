@@ -132,11 +132,6 @@
 
 /* ---- Animation keyframes ---- */
 
-@keyframes scan-line {
-  0%, 100% { opacity: 0.04; }
-  50% { opacity: 0.08; }
-}
-
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 5px oklch(0.7 0.15 220 / 20%), 0 0 20px oklch(0.7 0.15 220 / 5%); }
   50% { box-shadow: 0 0 10px oklch(0.7 0.15 220 / 35%), 0 0 40px oklch(0.7 0.15 220 / 10%); }
@@ -153,9 +148,17 @@
   100% { transform: rotate(360deg) scale(1); }
 }
 
-@keyframes grid-shift {
-  0% { background-position: 0 0; }
-  100% { background-position: 50px 50px; }
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(5%, -3%) scale(1.05); }
+  50% { transform: translate(2%, 2%) scale(0.95); }
+  75% { transform: translate(-3%, -1%) scale(1.02); }
+}
+
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-4%, 3%) scale(1.08); }
+  66% { transform: translate(3%, -2%) scale(0.92); }
 }
 
 @keyframes text-shimmer {
@@ -200,18 +203,38 @@
   box-shadow: 0 0 30px oklch(0.7 0.15 220 / 12%), inset 0 1px 0 oklch(1 0 0 / 8%);
 }
 
-/* ---- Background pattern ---- */
+/* ---- Background orbs ---- */
 
-.bg-grid {
-  background-image:
-    linear-gradient(oklch(0.25 0.03 260 / 15%) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.25 0.03 260 / 15%) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: grid-shift 20s linear infinite;
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.bg-radial-glow {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.65 0.15 220 / 8%), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 80%, oklch(0.5 0.15 250 / 5%), transparent);
+.bg-orbs::before,
+.bg-orbs::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+}
+
+.bg-orbs::before {
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, oklch(0.65 0.18 220 / 30%), transparent 70%);
+  top: -20%;
+  left: -10%;
+  animation: orb-drift-1 20s ease-in-out infinite;
+}
+
+.bg-orbs::after {
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, oklch(0.5 0.15 250 / 25%), transparent 70%);
+  bottom: -10%;
+  right: -5%;
+  animation: orb-drift-2 25s ease-in-out infinite;
 }
