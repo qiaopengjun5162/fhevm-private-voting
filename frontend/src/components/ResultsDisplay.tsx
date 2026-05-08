@@ -38,11 +38,14 @@ export function ResultsDisplay({
     setError(null);
     setResults(null);
 
+    const n = Math.max(state.options.length, state.encryptedTallies.length);
     const decryptedResults: number[] = [];
+    const failures: string[] = [];
 
-    for (let i = 0; i < state.options.length; i++) {
+    for (let i = 0; i < n; i++) {
+      const label = state.options[i] ?? `Option ${i + 1}`;
       try {
-        if (network.isSepolia) {
+        if (network.isSepolia && fhe.canUseFhe) {
           const handle = state.encryptedTallies[i];
           if (!handle) {
             decryptedResults.push(0);
@@ -51,13 +54,16 @@ export function ResultsDisplay({
           const count = await fhe.decryptTally(handle);
           decryptedResults.push(count);
         } else {
-          // Localhost: cannot decrypt, show 0
           decryptedResults.push(0);
         }
       } catch (e) {
         decryptedResults.push(0);
-        setError(e instanceof Error ? e.message : "Decryption failed for some options.");
+        failures.push(`${label}: ${e instanceof Error ? e.message : "decryption failed"}`);
       }
+    }
+
+    if (failures.length > 0) {
+      setError(failures.join(" · "));
     }
 
     setResults(decryptedResults);
@@ -94,21 +100,30 @@ export function ResultsDisplay({
         {/* Decrypted results */}
         {results && (
           <div className="space-y-3">
-            {state.options.map((option, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{option}</span>
-                  <span className="text-muted-foreground">{results[i]} vote(s)</span>
+            {results.map((count, i) => {
+              const label = state.options[i] ?? `Option ${i + 1}`;
+              return (
+                <div key={i} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">{label}</span>
+                    <span className="text-muted-foreground">{count} vote(s)</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-500"
+                      style={{ width: `${(count / maxVotes) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${(results[i] / maxVotes) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+
+        {fhe.error && (
+          <Alert variant="destructive">
+            <AlertDescription>{fhe.error}</AlertDescription>
+          </Alert>
         )}
 
         {error && (
@@ -117,9 +132,9 @@ export function ResultsDisplay({
           </Alert>
         )}
 
-        {!results && network.isSepolia && (
-          <Button onClick={handleDecrypt} disabled={decrypting}>
-            {decrypting ? "Decrypting..." : "Decrypt Results"}
+        {!results && network.isSepolia && fhe.canUseFhe && (
+          <Button onClick={handleDecrypt} disabled={decrypting || fhe.isInitializing}>
+            {decrypting || fhe.isInitializing ? "Decrypting..." : "Decrypt Results"}
           </Button>
         )}
       </CardContent>

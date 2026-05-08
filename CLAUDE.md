@@ -35,17 +35,19 @@ npm run build:ts
 
 ### Frontend
 
+Uses [Bun](https://bun.sh) in `frontend/` for faster installs and script startup (`packageManager` is pinned in `frontend/package.json`).
+
 ```bash
-cd frontend && npm install
+cd frontend && bun install
 
 # Dev server (hot reload)
-cd frontend && npm run dev
+cd frontend && bun run dev
 
 # Type check
-cd frontend && npx tsc --noEmit
+cd frontend && bunx tsc --noEmit
 
 # Production build
-cd frontend && npm run build
+cd frontend && bun run build
 ```
 
 ### Global

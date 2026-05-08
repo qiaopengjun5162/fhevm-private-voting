@@ -95,7 +95,8 @@ export function VoteForm({
       if (hasVoted) return "You have already voted.";
     }
     if (network.isReadOnly) return "FHE encryption is not available on this network.";
-    if (!fhe.isReady && network.isSepolia) return "Loading encryption SDK...";
+    if (!fhe.canUseFhe) return "Switch to Sepolia to cast an encrypted vote.";
+    if (fhe.isInitializing) return "Initializing FHE SDK...";
     return null;
   })();
 
@@ -153,6 +154,12 @@ export function VoteForm({
           </Alert>
         )}
 
+        {fhe.error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>{fhe.error}</AlertDescription>
+          </Alert>
+        )}
+
         {status === "error" && error && (
           <Alert variant="destructive" className="mt-4">
             <AlertDescription>{error}</AlertDescription>
@@ -162,7 +169,13 @@ export function VoteForm({
       <CardFooter>
         <Button
           onClick={handleSubmit}
-          disabled={selectedIndex === null || !canVote || isSubmitting || (network.isSepolia && !fhe.isReady)}
+          disabled={
+            selectedIndex === null ||
+            !canVote ||
+            isSubmitting ||
+            !fhe.canUseFhe ||
+            fhe.isInitializing
+          }
           className="w-full"
         >
           {isSubmitting ? VOTE_STATUS_LABELS[status] : "Submit Vote"}

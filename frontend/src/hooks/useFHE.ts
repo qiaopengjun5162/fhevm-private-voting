@@ -1,11 +1,20 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { BrowserProvider, JsonRpcSigner } from "ethers";
 import { SEPOLIA_RELAYER_URL, DECRYPT_AUTH_DURATION_DAYS } from "@/lib/config";
 import type { NetworkInfo, EncryptResult } from "@/types";
 
-// Dynamic type for the relayer instance since we lazy-import it
+type UserDecryptClear = bigint | boolean | number;
+
+function coalesceDecryptValue(value: unknown): number {
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "number") return value;
+  if (typeof value === "boolean") return value ? 1 : 0;
+  return 0;
+}
+
+// Narrow surface used from the lazy-loaded relayer SDK
 interface FhevmInstance {
   createEncryptedInput: (
     contractAddress: string,
@@ -24,7 +33,11 @@ interface FhevmInstance {
     contractAddresses: string[],
     startTimestamp: number,
     durationDays: number
-  ) => { domain: Record<string, unknown>; types: Record<string, unknown>; message: Record<string, unknown> };
+  ) => {
+    domain: Record<string, unknown>;
+    types: Record<string, unknown>;
+    message: Record<string, unknown>;
+  };
   userDecrypt: (
     handles: Array<{ handle: string; contractAddress: string }>,
     privateKey: string,
@@ -34,10 +47,15 @@ interface FhevmInstance {
     account: string,
     startTimestamp: number,
     durationDays: number
-  ) => Promise<bigint[]>;
+  ) => Promise<Record<string, UserDecryptClear>>;
 }
 
 export interface UseFHEReturn {
+  /** Sepolia + wallet write path (FHE is supported in principle). */
+  canUseFhe: boolean;
+  /** Relayer SDK finished `createInstance` successfully. */
+  isSdkReady: boolean;
+  /** Same as `canUseFhe && isSdkReady` — use for UI that requires a warm SDK. */
   isReady: boolean;
   isInitializing: boolean;
   error: string | null;
@@ -54,14 +72,27 @@ export function useFHE(
 ): UseFHEReturn {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSdkReady, setIsSdkReady] = useState(false);
   const instanceRef = useRef<FhevmInstance | null>(null);
 
-  const isReady = !network.isReadOnly && network.isSepolia;
+  const canUseFhe = !network.isReadOnly && network.isSepolia;
+  const isReady = canUseFhe && isSdkReady;
+
+  useEffect(() => {
+    instanceRef.current = null;
+    setIsSdkReady(false);
+    setError(null);
+  }, [provider, network.isSepolia, network.isReadOnly]);
 
   const getInstance = useCallback(async () => {
     if (instanceRef.current) return instanceRef.current;
-    if (!provider || !network.isSepolia) {
+    if (!provider || !network.isSepolia || network.isReadOnly) {
       throw new Error("FHE operations are only available on Sepolia network.");
+    }
+
+    const ethereum = typeof window !== "undefined" ? window.ethereum : undefined;
+    if (!ethereum) {
+      throw new Error("No EIP-1193 wallet (e.g. MetaMask) found.");
     }
 
     setIsInitializing(true);
@@ -70,12 +101,13 @@ export function useFHE(
     try {
       const { initSDK, createInstance, SepoliaConfig } = await import("@zama-fhe/relayer-sdk/web");
       await initSDK();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const instance = (await createInstance({
         ...SepoliaConfig,
-        network: (window as any).ethereum,
-      })) as any as FhevmInstance;
+        relayerUrl: SEPOLIA_RELAYER_URL,
+        network: ethereum,
+      })) as FhevmInstance;
       instanceRef.current = instance;
+      setIsSdkReady(true);
       return instance;
     } catch (e) {
       const message =
@@ -85,7 +117,7 @@ export function useFHE(
     } finally {
       setIsInitializing(false);
     }
-  }, [provider, network.isSepolia]);
+  }, [provider, network.isSepolia, network.isReadOnly]);
 
   const encryptVote = useCallback(
     async (optionIndex: number): Promise<EncryptResult> => {
@@ -126,14 +158,13 @@ export function useFHE(
         DECRYPT_AUTH_DURATION_DAYS
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const signature = await signer.signTypedData(
-        eip712.domain as any,
-        eip712.types as any,
-        eip712.message as any
+        eip712.domain as Parameters<JsonRpcSigner["signTypedData"]>[0],
+        eip712.types as Parameters<JsonRpcSigner["signTypedData"]>[1],
+        eip712.message as Parameters<JsonRpcSigner["signTypedData"]>[2]
       );
 
-      const result = await instance.userDecrypt(
+      const resultMap = await instance.userDecrypt(
         [{ handle: encryptedHandle, contractAddress }],
         keypair.privateKey,
         keypair.publicKey,
@@ -144,10 +175,20 @@ export function useFHE(
         DECRYPT_AUTH_DURATION_DAYS
       );
 
-      return result[0] ? Number(result[0]) : 0;
+      const values = Object.values(resultMap);
+      if (values.length === 0) return 0;
+      return coalesceDecryptValue(values[0]);
     },
     [contractAddress, account, signer, getInstance]
   );
 
-  return { isReady, isInitializing, error, encryptVote, decryptTally };
+  return {
+    canUseFhe,
+    isSdkReady,
+    isReady,
+    isInitializing,
+    error,
+    encryptVote,
+    decryptTally,
+  };
 }
