@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAddress, type BrowserProvider, type JsonRpcSigner } from "ethers";
+import { createWalletClient, custom } from "viem";
+import { sepolia } from "viem/chains";
 import { DECRYPT_AUTH_DURATION_DAYS } from "@/lib/config";
 import type { NetworkInfo, EncryptResult } from "@/types";
 
@@ -159,17 +161,19 @@ export function useFHE(
         DECRYPT_AUTH_DURATION_DAYS
       );
 
-      // ethers.js v6 signTypedData has strict type validation that rejects the
-      // SDK's EIP-712 types. Use raw JSON-RPC eth_signTypedData_v4 instead.
-      const signature = await signer.provider.send("eth_signTypedData_v4", [
-        userAddress,
-        JSON.stringify({
-          domain: eip712.domain,
-          types: eip712.types,
-          primaryType: "UserDecryptRequestVerification",
-          message: eip712.message,
-        }),
-      ]);
+      // Use viem for EIP-712 signing — more robust type handling than ethers v6.
+      const walletClient = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum!),
+        account: userAddress as `0x${string}`,
+      });
+
+      const signature = await walletClient.signTypedData({
+        domain: eip712.domain as Record<string, unknown>,
+        types: eip712.types as Record<string, { name: string; type: string }[]>,
+        primaryType: "UserDecryptRequestVerification",
+        message: eip712.message as Record<string, unknown>,
+      });
 
       const resultMap = await instance.userDecrypt(
         [{ handle: encryptedHandle, contractAddress }],
