@@ -82,11 +82,10 @@ Contracts use Zama's FHE library (`@fhevm/solidity`). Key types: `ebool`, `euint
 ### Contracts
 
 - **`FHECounter.sol`** — Template example: encrypted counter with `increment` and `decrement` using `euint32`.
-- **`PrivateVoting.sol`** — Main contract: confidential voting with up to `MAX_OPTIONS` (3) options. Users submit
-  encrypted votes (0 to MAX_OPTIONS-1). Each vote loops through all options, uses `FHE.eq` + `FHE.select` to produce an
-  encrypted 0 or 1, then `FHE.add` to tally homomorphically. Results can only be published after `endTime` via
-  `publishResults()`, which grants the owner decryption access. `grantResultAccess(viewer)` extends decryption rights to
-  others.
+- **`PrivateVoting.sol`** — Original voting contract. Note: `publishResults()` and `grantResultAccess()` lack access
+  control — anyone can call them.
+- **`PrivateVotingV2.sol`** — Fixed version with `onlyOwner` modifier on `publishResults()` and `grantResultAccess()`.
+  Use this for new deployments.
 
 ### Testing
 
@@ -189,17 +188,13 @@ frontend/src/
   works in tests.
 - **Sepolia**: Full functionality via `@zama-fhe/relayer-sdk` + Zama's KMS relayer
 
+### Vercel deployment
+
+Frontend is deployed on Vercel. Production build uses webpack (`next build --webpack`) because Turbopack hangs
+indefinitely. Vercel's built-in tsc cannot resolve `@/*` path aliases, so `ignoreBuildErrors: true` is set in
+`next.config.ts` — webpack handles resolution correctly at build time.
+
 ### Known issues
-
-**Turbopack workspace root detection**: Repo root has `package-lock.json` (Hardhat), frontend has `bun.lock`. Turbopack
-auto-detects repo root as workspace root, causing CSS `@import` (tailwindcss) resolution to fail. Fixed via
-`resolveAlias` in `next.config.ts`:
-
-```ts
-turbopack: {
-  resolveAlias: { tailwindcss: require.resolve("tailwindcss") },
-}
-```
 
 **Multiple wallet extensions**: Having multiple browser wallet extensions (MetaMask + others) causes
 `Cannot redefine property: ethereum` errors and hydration mismatches. Disable all wallet extensions except the one being
@@ -207,3 +202,6 @@ used.
 
 **Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but
 encrypted voting and decryption require Sepolia.
+
+**Contract permission (V1)**: `PrivateVoting.sol` has no access control on `publishResults()` and
+`grantResultAccess()` — anyone can call them. Use `PrivateVotingV2.sol` for new deployments.

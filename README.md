@@ -1,5 +1,7 @@
 # FHE Private Voting dApp
 
+[中文版](./README.zh-CN.md)
+
 Confidential on-chain voting powered by [Zama fhEVM](https://www.zama.ai/fhevm) — Fully Homomorphic Encryption on
 Ethereum. Votes are encrypted end-to-end, tallies are computed homomorphically, and results are only revealed after the
 voting window closes.
@@ -120,4 +122,4 @@ Then open `http://localhost:3000`, connect MetaMask (Sepolia), paste the deploye
 
 ## License
 
-MIT
+BSD-3-Clause-Clear — see [LICENSE](./LICENSE)
