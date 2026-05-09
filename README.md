@@ -24,6 +24,20 @@ fhevm-private-voting/
         └── lib/                # ABI, config, utils, types
 ```
 
+## Why FHE Voting?
+
+Traditional on-chain voting is fully transparent — every ballot is public. This enables vote buying, strategic voting,
+and peer pressure. DAOs and shareholder governance need confidentiality, but without sacrificing verifiability.
+
+| Approach | Limitations |
+|----------|-------------|
+| Commit-reveal | Two transactions; voters can abort after seeing partial tally |
+| TEE (Trusted Execution Environment) | Hardware trust assumption; side-channel attacks exist |
+| **FHE (this project)** | Pure cryptography; single tx; no trusted hardware |
+
+With FHE: ballots are encrypted end-to-end, computation runs directly on ciphertext, and results are only decryptable
+after the voting window closes. Not even the contract owner can peek at individual votes.
+
 ## How It Works
 
 1. Deployer creates a voting with title, options, and time window
@@ -31,6 +45,13 @@ fhevm-private-voting/
 3. Tallies accumulate via **homomorphic addition** (computation on encrypted data)
 4. After the window closes, the owner publishes results
 5. Authorized viewers decrypt the final tallies
+
+## Live Demo
+
+Frontend deployed on Vercel: [fhevm-private-voting-nine.vercel.app](https://fhevm-private-voting-nine.vercel.app/)
+
+> Contract deployed on Sepolia testnet. Connect MetaMask (Sepolia), paste the deployed contract address, and interact
+> with the full FHE voting flow.
 
 ## Quick Start
 
