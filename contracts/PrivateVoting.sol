@@ -29,8 +29,8 @@ contract PrivateVoting is ZamaEthereumConfig {
 
     // 私有变量
     string[] private _options; // 选项列表 (虽未加密，但设为私有)
-    mapping(address => bool) private _hasVoted; // 投票记录
-    mapping(uint8 => euint8) private _encryptedTallies; // 加密票数
+    mapping(address voter => bool voted) private _hasVoted;
+    mapping(uint8 optionIndex => euint8 tally) private _encryptedTallies;
 
     event VoteSubmitted(address indexed voter);
     event ResultsPublished();
@@ -85,10 +85,10 @@ contract PrivateVoting is ZamaEthereumConfig {
 
         // 3. 同态计算票数
         for (uint8 i = 0; i < _options.length; i++) {
-            ebool isSelected = FHE.eq(choice, i); // 加密比较
-            euint8 increment = FHE.select(isSelected, FHE.asEuint8(1), FHE.asEuint8(0)); // 加密选择 基于加密的布尔值 isSelected，选择返回 1 或 0
-            _encryptedTallies[i] = FHE.add(_encryptedTallies[i], increment); // 加密累加票数 在加密数据上直接计算
-            FHE.allowThis(_encryptedTallies[i]); // 允许此变量被其他合约访问 授予合约自身操作和更新这个加密值的权限
+            ebool isSelected = FHE.eq(choice, i);
+            euint8 increment = FHE.select(isSelected, FHE.asEuint8(1), FHE.asEuint8(0));
+            _encryptedTallies[i] = FHE.add(_encryptedTallies[i], increment);
+            FHE.allowThis(_encryptedTallies[i]);
         }
 
         _hasVoted[msg.sender] = true;
