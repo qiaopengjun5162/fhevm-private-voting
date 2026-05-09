@@ -203,5 +203,5 @@ used.
 **Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but
 encrypted voting and decryption require Sepolia.
 
-**Contract permission (V1)**: `PrivateVoting.sol` has no access control on `publishResults()` and
-`grantResultAccess()` — anyone can call them. Use `PrivateVotingV2.sol` for new deployments.
+**Contract permission (V1)**: `PrivateVoting.sol` has no access control on `publishResults()` and `grantResultAccess()`
+— anyone can call them. Use `PrivateVotingV2.sol` for new deployments.

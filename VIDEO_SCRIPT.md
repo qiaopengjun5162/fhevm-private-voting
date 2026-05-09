@@ -16,7 +16,8 @@ ZH: 大家好，我用 Zama fhEVM 做了一个隐私投票 dApp，给大家演�
 
 **[0:15-0:40] Problem**
 
-EN: On normal blockchains, all votes are public. Anyone can see who voted for what. This is bad for DAOs and governance — vote buying, peer pressure, no real privacy.
+EN: On normal blockchains, all votes are public. Anyone can see who voted for what. This is bad for DAOs and governance
+— vote buying, peer pressure, no real privacy.
 
 ZH: 普通区块链上，所有投票都是公开的。谁投了什么一目了然。这对 DAO 治理来说是个大问题 —— 贿选、跟风投票、毫无隐私。
 
@@ -48,7 +49,8 @@ EN: Now voting is over. Only the owner can publish results.
 
 ZH: 投票窗口结束了。只有部署者才能发布结果。
 
-EN: I click publish. Then I grant access to viewers. When they decrypt, the final counts appear. But individual votes? Gone forever.
+EN: I click publish. Then I grant access to viewers. When they decrypt, the final counts appear. But individual votes?
+Gone forever.
 
 ZH: 点击发布，授权解密。查看者解密后看到最终票数。但每一张票投给了谁？永远没人知道。
 
@@ -56,7 +58,8 @@ ZH: 点击发布，授权解密。查看者解密后看到最终票数。但每�
 
 **[1:50-2:05] Tech Stack & Close**
 
-EN: The stack: Solidity with FHE.sol, Next.js frontend, Zama relayer SDK. Source code on GitHub, full docs in Chinese and English.
+EN: The stack: Solidity with FHE.sol, Next.js frontend, Zama relayer SDK. Source code on GitHub, full docs in Chinese
+and English.
 
 ZH: 技术栈：Solidity + FHE.sol，Next.js 前端，Zama relayer SDK。GitHub 有完整代码和中英文文档。
 

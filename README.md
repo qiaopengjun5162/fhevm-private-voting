@@ -29,11 +29,11 @@ fhevm-private-voting/
 Traditional on-chain voting is fully transparent — every ballot is public. This enables vote buying, strategic voting,
 and peer pressure. DAOs and shareholder governance need confidentiality, but without sacrificing verifiability.
 
-| Approach | Limitations |
-|----------|-------------|
-| Commit-reveal | Two transactions; voters can abort after seeing partial tally |
-| TEE (Trusted Execution Environment) | Hardware trust assumption; side-channel attacks exist |
-| **FHE (this project)** | Pure cryptography; single tx; no trusted hardware |
+| Approach                            | Limitations                                                   |
+| ----------------------------------- | ------------------------------------------------------------- |
+| Commit-reveal                       | Two transactions; voters can abort after seeing partial tally |
+| TEE (Trusted Execution Environment) | Hardware trust assumption; side-channel attacks exist         |
+| **FHE (this project)**              | Pure cryptography; single tx; no trusted hardware             |
 
 With FHE: ballots are encrypted end-to-end, computation runs directly on ciphertext, and results are only decryptable
 after the voting window closes. Not even the contract owner can peek at individual votes.

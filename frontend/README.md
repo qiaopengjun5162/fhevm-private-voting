@@ -51,9 +51,11 @@ src/
 
 ## FHE 流程 (Sepolia)
 
-1. 用户选择选项 → `useFHE.encryptVote(index)` → 懒加载 `@zama-fhe/relayer-sdk/web`，调用 `createEncryptedInput(contractAddr, userAddr).add8(index).encrypt()`
+1. 用户选择选项 → `useFHE.encryptVote(index)` → 懒加载 `@zama-fhe/relayer-sdk/web`，调用
+   `createEncryptedInput(contractAddr, userAddr).add8(index).encrypt()`
 2. 返回 `{handles, inputProof}` → 传给 `contract.vote(handles[0], inputProof)`
-3. 结果解密: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()` → `userDecrypt()`
+3. 结果解密: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()` →
+   `userDecrypt()`
 
 ## 网络支持
 
@@ -62,4 +64,5 @@ src/
 
 ## Vercel 部署
 
-生产构建使用 webpack (`next build --webpack`)，Turbopack 在生产构建时会无限挂起。`next.config.ts` 中配置了 COOP/COEP 头以支持 relayer SDK 的 Web Worker。
+生产构建使用 webpack (`next build --webpack`)，Turbopack 在生产构建时会无限挂起。`next.config.ts`
+中配置了 COOP/COEP 头以支持 relayer SDK 的 Web Worker。

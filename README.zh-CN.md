@@ -2,8 +2,8 @@
 
 [English](./README.md)
 
-基于 [Zama fhEVM](https://www.zama.ai/fhevm) 的链上机密投票 —— 全同态加密 (Fully Homomorphic Encryption)
-运行在以太坊上。投票端到端加密，计票通过同态运算完成，结果仅在投票窗口关闭后才可解密查看。
+基于 [Zama fhEVM](https://www.zama.ai/fhevm) 的链上机密投票 —— 全同态加密 (Fully Homomorphic
+Encryption) 运行在以太坊上。投票端到端加密，计票通过同态运算完成，结果仅在投票窗口关闭后才可解密查看。
 
 ## 架构
 
@@ -27,11 +27,11 @@ fhevm-private-voting/
 
 传统链上投票完全透明 —— 每一张票都是公开的。这导致贿选、策略性投票和跟风投票。DAO 和股东治理需要保密性，但不能牺牲可验证性。
 
-| 方案 | 局限性 |
-|------|--------|
+| 方案                      | 局限性                                     |
+| ------------------------- | ------------------------------------------ |
 | Commit-reveal (提交-揭示) | 需要两笔交易；投票者看到部分结果后可以弃投 |
-| TEE (可信执行环境) | 依赖硬件安全；存在侧信道攻击风险 |
-| **FHE (本项目)** | 纯密码学方案；单笔交易；无需信任硬件 |
+| TEE (可信执行环境)        | 依赖硬件安全；存在侧信道攻击风险           |
+| **FHE (本项目)**          | 纯密码学方案；单笔交易；无需信任硬件       |
 
 FHE 方案下：选票端到端加密，计算直接在密文上进行，结果仅在投票窗口关闭后才可解密。即使是合约所有者也无法偷看任何人的投票。
 
@@ -122,34 +122,35 @@ cd frontend && bun run build   # 生产构建 (webpack)
 ```
 
 `next.config.ts` 关键配置：
+
 - `transpilePackages: ["@zama-fhe/relayer-sdk"]` — FHE SDK 需要转译
 - `ignoreBuildErrors: true` — Vercel tsc 无法解析 `@/*` 路径别名，webpack 构建不受影响
 - COOP/COEP 头 — `@zama-fhe/relayer-sdk` Web Worker 所必需
 
 ## 命令参考
 
-| 命令                                | 说明                       |
-| ----------------------------------- | -------------------------- |
-| `npm run compile`                   | 编译合约 + 生成 TypeChain 类型 |
-| `npm test`                          | 运行合约测试 (fhevm mock)    |
-| `npm run chain`                     | 启动本地 Hardhat 节点       |
-| `npm run deploy:localhost`          | 部署到 localhost            |
-| `npm run deploy:sepolia`            | 部署到 Sepolia              |
-| `npm run prettier:write`            | 格式化代码                  |
-| `cd frontend && bun dev`            | 前端开发服务器              |
-| `cd frontend && bun run build`      | 前端生产构建                |
-| `cd frontend && bunx tsc --noEmit`  | 前端类型检查                |
+| 命令                               | 说明                           |
+| ---------------------------------- | ------------------------------ |
+| `npm run compile`                  | 编译合约 + 生成 TypeChain 类型 |
+| `npm test`                         | 运行合约测试 (fhevm mock)      |
+| `npm run chain`                    | 启动本地 Hardhat 节点          |
+| `npm run deploy:localhost`         | 部署到 localhost               |
+| `npm run deploy:sepolia`           | 部署到 Sepolia                 |
+| `npm run prettier:write`           | 格式化代码                     |
+| `cd frontend && bun dev`           | 前端开发服务器                 |
+| `cd frontend && bun run build`     | 前端生产构建                   |
+| `cd frontend && bunx tsc --noEmit` | 前端类型检查                   |
 
 ## 技术栈
 
-| 层级       | 技术                                  |
-| ---------- | ------------------------------------- |
-| 智能合约   | Solidity 0.8.27 + @fhevm/solidity     |
-| FHE SDK    | @zama-fhe/relayer-sdk                 |
-| 前端       | Next.js 16 + React 19 + TypeScript    |
-| 样式       | Tailwind CSS 4 + shadcn/ui            |
-| Web3       | ethers.js v6                          |
-| 开发工具   | Hardhat + hardhat-deploy + Bun        |
+| 层级     | 技术                               |
+| -------- | ---------------------------------- |
+| 智能合约 | Solidity 0.8.27 + @fhevm/solidity  |
+| FHE SDK  | @zama-fhe/relayer-sdk              |
+| 前端     | Next.js 16 + React 19 + TypeScript |
+| 样式     | Tailwind CSS 4 + shadcn/ui         |
+| Web3     | ethers.js v6                       |
+| 开发工具 | Hardhat + hardhat-deploy + Bun     |
 
 ## 许可证
 
