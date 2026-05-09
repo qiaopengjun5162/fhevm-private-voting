@@ -267,7 +267,31 @@ modifier onlyOwner() {
 
 ---
 
-## 经验总结
+## 7. Etherscan API V1 → V2 迁移
+
+### 7.1 新合约验证失败
+
+**问题**: 部署 PrivateVotingV2 后验证失败，报错 `no API token was found for this network`。之前的部署验证都成功了，这次不行。
+
+**排查**: 配置里用的是按网络区分的 V1 格式：
+```ts
+etherscan: {
+  apiKey: {
+    sepolia: vars.get("ETHERSCAN_API_KEY", ""),
+  },
+},
+```
+之前验证成功是因为那时 Etherscan V1 API 还能用。
+
+**最终方案**: Etherscan 已废弃 V1 API (2025年5月31日后停止支持)，改用 V2 统一 apiKey 格式：
+```ts
+etherscan: {
+  apiKey: process.env.ETHERSCAN_API_KEY || vars.get("ETHERSCAN_API_KEY", ""),
+},
+```
+同时确保 `.env` 中的 `ETHERSCAN_API_KEY` 能被读到。验证通过。
+
+**Commit**: `60573c8`
 
 1. **EIP-712 跨库兼容性**: ethers.js v6 对 EIP-712
    types 校验过于严格，viem 更宽松。如果 SDK 生成的 EIP-712 结构包含多个顶层类型，优先考虑 viem。
