@@ -20,7 +20,7 @@ function coalesceDecryptValue(value: unknown): number {
 interface FhevmInstance {
   createEncryptedInput: (
     contractAddress: string,
-    userAddress: string
+    userAddress: string,
   ) => {
     add8: (value: number) => {
       encrypt: () => Promise<{
@@ -34,7 +34,7 @@ interface FhevmInstance {
     publicKey: string,
     contractAddresses: string[],
     startTimestamp: number,
-    durationDays: number
+    durationDays: number,
   ) => {
     domain: Record<string, unknown>;
     types: Record<string, unknown>;
@@ -48,7 +48,7 @@ interface FhevmInstance {
     contractAddresses: string[],
     account: string,
     startTimestamp: number,
-    durationDays: number
+    durationDays: number,
   ) => Promise<Record<string, UserDecryptClear>>;
 }
 
@@ -70,7 +70,7 @@ export function useFHE(
   signer: JsonRpcSigner | null,
   contractAddress: string | null,
   network: NetworkInfo,
-  account: string | null
+  account: string | null,
 ): UseFHEReturn {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,8 +111,7 @@ export function useFHE(
       setIsSdkReady(true);
       return instance;
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to initialize FHE encryption";
+      const message = e instanceof Error ? e.message : "Failed to initialize FHE encryption";
       setError(message);
       throw e;
     } finally {
@@ -128,16 +127,13 @@ export function useFHE(
 
       const userAddress = getAddress(account);
       const instance = await getInstance();
-      const encrypted = await instance
-        .createEncryptedInput(contractAddress, userAddress)
-        .add8(optionIndex)
-        .encrypt();
+      const encrypted = await instance.createEncryptedInput(contractAddress, userAddress).add8(optionIndex).encrypt();
       return {
         handles: encrypted.handles,
         inputProof: encrypted.inputProof,
       };
     },
-    [contractAddress, account, getInstance]
+    [contractAddress, account, getInstance],
   );
 
   const decryptTally = useCallback(
@@ -146,7 +142,10 @@ export function useFHE(
         throw new Error("Wallet not connected or contract not loaded.");
       }
 
-      if (!encryptedHandle || encryptedHandle === "0x0000000000000000000000000000000000000000000000000000000000000000") {
+      if (
+        !encryptedHandle ||
+        encryptedHandle === "0x0000000000000000000000000000000000000000000000000000000000000000"
+      ) {
         return 0;
       }
 
@@ -158,7 +157,7 @@ export function useFHE(
         keypair.publicKey,
         [contractAddress],
         startTimestamp,
-        DECRYPT_AUTH_DURATION_DAYS
+        DECRYPT_AUTH_DURATION_DAYS,
       );
 
       // Use viem for EIP-712 signing — more robust type handling than ethers v6.
@@ -183,14 +182,14 @@ export function useFHE(
         [contractAddress],
         userAddress,
         startTimestamp,
-        DECRYPT_AUTH_DURATION_DAYS
+        DECRYPT_AUTH_DURATION_DAYS,
       );
 
       const values = Object.values(resultMap);
       if (values.length === 0) return 0;
       return coalesceDecryptValue(values[0]);
     },
-    [contractAddress, account, signer, getInstance]
+    [contractAddress, account, signer, getInstance],
   );
 
   return {

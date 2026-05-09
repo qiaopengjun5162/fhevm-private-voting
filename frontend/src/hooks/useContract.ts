@@ -6,7 +6,7 @@ import { PRIVATE_VOTING_ABI } from "@/lib/abi";
 
 export function useContract(
   contractAddress: string | null,
-  signerOrProvider: JsonRpcSigner | import("ethers").BrowserProvider | null
+  signerOrProvider: JsonRpcSigner | import("ethers").BrowserProvider | null,
 ): Contract | null {
   return useMemo(() => {
     if (!contractAddress || !signerOrProvider) return null;

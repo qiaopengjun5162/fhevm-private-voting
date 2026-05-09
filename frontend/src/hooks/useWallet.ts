@@ -66,7 +66,7 @@ export function useWallet(): UseWalletReturn {
         p.getSigner().then(setSigner).catch(console.error);
       }
     },
-    [resetState]
+    [resetState],
   );
 
   const handleChainChanged = useCallback(() => {

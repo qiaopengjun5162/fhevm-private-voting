@@ -1,6 +1,8 @@
 # FHE Private Voting dApp
 
-Confidential on-chain voting powered by [Zama fhEVM](https://www.zama.ai/fhevm) — Fully Homomorphic Encryption on Ethereum. Votes are encrypted end-to-end, tallies are computed homomorphically, and results are only revealed after the voting window closes.
+Confidential on-chain voting powered by [Zama fhEVM](https://www.zama.ai/fhevm) — Fully Homomorphic Encryption on
+Ethereum. Votes are encrypted end-to-end, tallies are computed homomorphically, and results are only revealed after the
+voting window closes.
 
 ## Architecture
 
@@ -94,27 +96,27 @@ Then open `http://localhost:3000`, connect MetaMask (Sepolia), paste the deploye
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run compile` | Compile contracts + generate TypeChain types |
-| `npm test` | Run contract tests (fhevm mock) |
-| `npm run chain` | Start local Hardhat node |
-| `npm run deploy:localhost` | Deploy to localhost |
-| `npm run deploy:sepolia` | Deploy to Sepolia |
-| `npm run prettier:write` | Format code |
-| `cd frontend && bun dev` | Frontend dev server |
-| `cd frontend && bunx tsc --noEmit` | Frontend type check |
+| Command                            | Description                                  |
+| ---------------------------------- | -------------------------------------------- |
+| `npm run compile`                  | Compile contracts + generate TypeChain types |
+| `npm test`                         | Run contract tests (fhevm mock)              |
+| `npm run chain`                    | Start local Hardhat node                     |
+| `npm run deploy:localhost`         | Deploy to localhost                          |
+| `npm run deploy:sepolia`           | Deploy to Sepolia                            |
+| `npm run prettier:write`           | Format code                                  |
+| `cd frontend && bun dev`           | Frontend dev server                          |
+| `cd frontend && bunx tsc --noEmit` | Frontend type check                          |
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Smart Contracts | Solidity 0.8.27 + @fhevm/solidity |
-| FHE SDK | @zama-fhe/relayer-sdk |
-| Frontend | Next.js 16 + React 19 + TypeScript |
-| Styling | Tailwind CSS 4 + shadcn/ui |
-| Web3 | ethers.js v6 |
-| Dev Tools | Hardhat + hardhat-deploy + Bun |
+| Layer           | Technology                         |
+| --------------- | ---------------------------------- |
+| Smart Contracts | Solidity 0.8.27 + @fhevm/solidity  |
+| FHE SDK         | @zama-fhe/relayer-sdk              |
+| Frontend        | Next.js 16 + React 19 + TypeScript |
+| Styling         | Tailwind CSS 4 + shadcn/ui         |
+| Web3            | ethers.js v6                       |
+| Dev Tools       | Hardhat + hardhat-deploy + Bun     |
 
 ## License
 

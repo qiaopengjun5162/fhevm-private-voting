@@ -6,5 +6,5 @@
   "[solidity]": {
     "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
   },
-  "cSpell.words": ["ebool", "Euint", "fhevm"]
+  "cSpell.words": ["ebool", "Euint", "fhevm", "turbopack"]
 }

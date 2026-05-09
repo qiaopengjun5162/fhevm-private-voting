@@ -14,10 +14,7 @@ interface UseVotingStateReturn {
   refresh: () => Promise<void>;
 }
 
-export function useVotingState(
-  contract: Contract | null,
-  account: string | null
-): UseVotingStateReturn {
+export function useVotingState(contract: Contract | null, account: string | null): UseVotingStateReturn {
   const [state, setState] = useState<VotingState | null>(null);
   const [phase, setPhase] = useState<VotingPhase | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,17 +33,16 @@ export function useVotingState(
     setError(null);
 
     try {
-      const [title, options, startTime, endTime, resultsPublished, owner, hasVoted, optionCount] =
-        (await Promise.all([
-          contract.title(),
-          contract.getOptions(),
-          contract.startTime(),
-          contract.endTime(),
-          contract.resultsPublished(),
-          contract.owner(),
-          account ? contract.hasVoted(account) : Promise.resolve(false),
-          contract.optionCount(),
-        ])) as [string, string[], bigint, bigint, boolean, string, boolean, bigint];
+      const [title, options, startTime, endTime, resultsPublished, owner, hasVoted, optionCount] = (await Promise.all([
+        contract.title(),
+        contract.getOptions(),
+        contract.startTime(),
+        contract.endTime(),
+        contract.resultsPublished(),
+        contract.owner(),
+        account ? contract.hasVoted(account) : Promise.resolve(false),
+        contract.optionCount(),
+      ])) as [string, string[], bigint, bigint, boolean, string, boolean, bigint];
 
       const count = Number(optionCount);
       const tallies: string[] = [];

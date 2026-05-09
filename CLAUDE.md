@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FHE Private Voting dApp — confidential on-chain voting using Zama's fhEVM (Fully Homomorphic Encryption on Ethereum). Based on the `fhevm-hardhat-template`. Votes are encrypted, tallies are computed homomorphically, and results are only revealed after the voting window closes.
+FHE Private Voting dApp — confidential on-chain voting using Zama's fhEVM (Fully Homomorphic Encryption on Ethereum).
+Based on the `fhevm-hardhat-template`. Votes are encrypted, tallies are computed homomorphically, and results are only
+revealed after the voting window closes.
 
 ## Commands
 
@@ -35,7 +37,8 @@ npm run build:ts
 
 ### Frontend
 
-Uses [Bun](https://bun.sh) in `frontend/` for faster installs and script startup (`packageManager` is pinned in `frontend/package.json`).
+Uses [Bun](https://bun.sh) in `frontend/` for faster installs and script startup (`packageManager` is pinned in
+`frontend/package.json`).
 
 ```bash
 cd frontend && bun install
@@ -66,29 +69,43 @@ npm run prettier:write
 
 Contracts use Zama's FHE library (`@fhevm/solidity`). Key types: `ebool`, `euint8`, `euint32`, `externalEuint*`.
 
-- **Encrypted inputs**: Users encrypt values off-chain via `fhevm.createEncryptedInput(contractAddr, userAddr).add8(value).encrypt()`, then pass `{handles, inputProof}` to the contract.
-- **Homomorphic operations**: `FHE.add()`, `FHE.sub()`, `FHE.eq()`, `FHE.select(condition, trueVal, falseVal)` — all run on encrypted data.
-- **Access control**: Encrypted values are not readable by default. `FHE.allowThis(value)` lets the contract itself operate on it. `FHE.allow(value, address)` grants decryption permission to a specific address.
-- **Decryption**: Tests use `fhevm.userDecryptEuint(FhevmType.euint8, encryptedHandle, contractAddr, signer)` — only works when the signer has been granted access via `FHE.allow`.
+- **Encrypted inputs**: Users encrypt values off-chain via
+  `fhevm.createEncryptedInput(contractAddr, userAddr).add8(value).encrypt()`, then pass `{handles, inputProof}` to the
+  contract.
+- **Homomorphic operations**: `FHE.add()`, `FHE.sub()`, `FHE.eq()`, `FHE.select(condition, trueVal, falseVal)` — all run
+  on encrypted data.
+- **Access control**: Encrypted values are not readable by default. `FHE.allowThis(value)` lets the contract itself
+  operate on it. `FHE.allow(value, address)` grants decryption permission to a specific address.
+- **Decryption**: Tests use `fhevm.userDecryptEuint(FhevmType.euint8, encryptedHandle, contractAddr, signer)` — only
+  works when the signer has been granted access via `FHE.allow`.
 
 ### Contracts
 
 - **`FHECounter.sol`** — Template example: encrypted counter with `increment` and `decrement` using `euint32`.
-- **`PrivateVoting.sol`** — Main contract: confidential voting with up to `MAX_OPTIONS` (3) options. Users submit encrypted votes (0 to MAX_OPTIONS-1). Each vote loops through all options, uses `FHE.eq` + `FHE.select` to produce an encrypted 0 or 1, then `FHE.add` to tally homomorphically. Results can only be published after `endTime` via `publishResults()`, which grants the owner decryption access. `grantResultAccess(viewer)` extends decryption rights to others.
+- **`PrivateVoting.sol`** — Main contract: confidential voting with up to `MAX_OPTIONS` (3) options. Users submit
+  encrypted votes (0 to MAX_OPTIONS-1). Each vote loops through all options, uses `FHE.eq` + `FHE.select` to produce an
+  encrypted 0 or 1, then `FHE.add` to tally homomorphically. Results can only be published after `endTime` via
+  `publishResults()`, which grants the owner decryption access. `grantResultAccess(viewer)` extends decryption rights to
+  others.
 
 ### Testing
 
-Tests use the fhevm **mock** environment (not a real fheVM node). Each test suite checks `fhevm.isMock` in `beforeEach` and skips if false (e.g., on Sepolia). The encrypted input flow in tests: `fhevm.createEncryptedInput()` → `.add8(value)` → `.encrypt()` → pass handles + proof to contract → wait for tx → `fhevm.userDecryptEuint()` to verify.
+Tests use the fhevm **mock** environment (not a real fheVM node). Each test suite checks `fhevm.isMock` in `beforeEach`
+and skips if false (e.g., on Sepolia). The encrypted input flow in tests: `fhevm.createEncryptedInput()` →
+`.add8(value)` → `.encrypt()` → pass handles + proof to contract → wait for tx → `fhevm.userDecryptEuint()` to verify.
 
 `FHECounterSepolia.ts` is the opposite: it runs **only** on a real network and skips if `fhevm.isMock` is true.
 
 ### Deployment
 
-Uses `hardhat-deploy`. Scripts in `deploy/` are ordered by filename prefix (`02_deploy_voting.ts` runs after `deploy.ts`). Each script exports a `DeployFunction` with a unique `id` and `tags`. The network determines where it deploys (localhost, Sepolia).
+Uses `hardhat-deploy`. Scripts in `deploy/` are ordered by filename prefix (`02_deploy_voting.ts` runs after
+`deploy.ts`). Each script exports a `DeployFunction` with a unique `id` and `tags`. The network determines where it
+deploys (localhost, Sepolia).
 
 **Environment variables (.env):**
 
-Copy `.env.example` to `.env` and fill in real values. `.env` is gitignored. Priority: `process.env` > hardhat vars > defaults.
+Copy `.env.example` to `.env` and fill in real values. `.env` is gitignored. Priority: `process.env` > hardhat vars >
+defaults.
 
 Supports both **private key** (recommended) and **mnemonic**, plus direct RPC URL or Infura API key:
 
@@ -115,13 +132,16 @@ npm run verify:sepolia
 
 ### Hardhat tasks
 
-Tasks in `tasks/` provide CLI interaction with contracts. `task:increment` and `task:decrement` for FHECounter; `task:decrypt-count` reads the encrypted counter. Tasks require `fhevm.initializeCLIApi()` before FHE operations.
+Tasks in `tasks/` provide CLI interaction with contracts. `task:increment` and `task:decrement` for FHECounter;
+`task:decrypt-count` reads the encrypted counter. Tasks require `fhevm.initializeCLIApi()` before FHE operations.
 
 ### TypeChain
 
-Contract ABIs are auto-converted to typed ethers.js v6 bindings in `types/`. After compilation, `npm run typechain` regenerates these. Import types as `import { PrivateVoting__factory } from "../types"`.
+Contract ABIs are auto-converted to typed ethers.js v6 bindings in `types/`. After compilation, `npm run typechain`
+regenerates these. Import types as `import { PrivateVoting__factory } from "../types"`.
 
-**Note:** `types/` is gitignored — generated on `npm run compile`. If `npx hardhat compile` says "Nothing to compile", use `--force`.
+**Note:** `types/` is gitignored — generated on `npm run compile`. If `npx hardhat compile` says "Nothing to compile",
+use `--force`.
 
 ### Frontend (Next.js 16)
 
@@ -156,23 +176,34 @@ frontend/src/
 ```
 
 **FHE flow on Sepolia:**
-1. User selects option → `useFHE.encryptVote(index)` → lazily loads `@zama-fhe/relayer-sdk/web`, calls `createEncryptedInput(contractAddr, userAddr).add8(index).encrypt()`
+
+1. User selects option → `useFHE.encryptVote(index)` → lazily loads `@zama-fhe/relayer-sdk/web`, calls
+   `createEncryptedInput(contractAddr, userAddr).add8(index).encrypt()`
 2. Returns `{handles, inputProof}` → passed to `contract.vote(handles[0], inputProof)`
-3. Results decryption: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()` → `userDecrypt()`
+3. Results decryption: `useFHE.decryptTally(handle)` → `generateKeypair()` → `createEIP712()` → `signer.signTypedData()`
+   → `userDecrypt()`
 
 **Network support:**
-- **Localhost (Hardhat)**: Read-only contract interaction; FHE encryption/decryption not available. Mock encryption only works in tests.
+
+- **Localhost (Hardhat)**: Read-only contract interaction; FHE encryption/decryption not available. Mock encryption only
+  works in tests.
 - **Sepolia**: Full functionality via `@zama-fhe/relayer-sdk` + Zama's KMS relayer
 
 ### Known issues
 
-**Turbopack workspace root detection**: Repo root has `package-lock.json` (Hardhat), frontend has `bun.lock`. Turbopack auto-detects repo root as workspace root, causing CSS `@import` (tailwindcss) resolution to fail. Fixed via `resolveAlias` in `next.config.ts`:
+**Turbopack workspace root detection**: Repo root has `package-lock.json` (Hardhat), frontend has `bun.lock`. Turbopack
+auto-detects repo root as workspace root, causing CSS `@import` (tailwindcss) resolution to fail. Fixed via
+`resolveAlias` in `next.config.ts`:
+
 ```ts
 turbopack: {
   resolveAlias: { tailwindcss: require.resolve("tailwindcss") },
 }
 ```
 
-**Multiple wallet extensions**: Having multiple browser wallet extensions (MetaMask + others) causes `Cannot redefine property: ethereum` errors and hydration mismatches. Disable all wallet extensions except the one being used.
+**Multiple wallet extensions**: Having multiple browser wallet extensions (MetaMask + others) causes
+`Cannot redefine property: ethereum` errors and hydration mismatches. Disable all wallet extensions except the one being
+used.
 
-**Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but encrypted voting and decryption require Sepolia.
+**Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but
+encrypted voting and decryption require Sepolia.

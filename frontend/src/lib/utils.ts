@@ -16,11 +16,7 @@ export function formatTimestamp(seconds: bigint | number): string {
 
 export type VotingPhase = "before_start" | "live" | "ended" | "results_published";
 
-export function computePhase(
-  startTime: bigint,
-  endTime: bigint,
-  resultsPublished: boolean
-): VotingPhase {
+export function computePhase(startTime: bigint, endTime: bigint, resultsPublished: boolean): VotingPhase {
   const now = Math.floor(Date.now() / 1000);
   if (resultsPublished) return "results_published";
   if (now < Number(startTime)) return "before_start";
