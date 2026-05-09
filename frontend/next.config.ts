@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  turbopack: {
-    // 只扫描 frontend 目录，不向上找 repo root 的 package-lock.json
-    root: __dirname,
-  },
 };
 
 export default nextConfig;
