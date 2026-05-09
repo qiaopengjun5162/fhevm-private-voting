@@ -15,11 +15,8 @@ const nextConfig: NextConfig = {
     ]
   },
   turbopack: {
-    // 强制 Turbopack 只在前端目录解析
-    resolveAlias: {
-      // 确保 tailwindcss 从正确位置加载
-      tailwindcss: require.resolve("tailwindcss"),
-    },
+    // 只扫描 frontend 目录，不向上找 repo root 的 package-lock.json
+    root: __dirname,
   },
 }
 
