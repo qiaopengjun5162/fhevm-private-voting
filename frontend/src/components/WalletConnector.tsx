@@ -55,7 +55,7 @@ export function WalletConnector({
             <div className="text-xs text-primary/70">Connected</div>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={disconnect} className="text-muted-foreground hover:text-destructive">
+        <Button variant="ghost" size="sm" onClick={() => disconnect()} className="text-muted-foreground hover:text-destructive" title="Disconnect wallet">
           <LogOut className="w-4 h-4" />
         </Button>
       </div>

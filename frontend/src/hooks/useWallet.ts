@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserProvider, JsonRpcSigner } from "ethers";
 
 declare global {
@@ -25,7 +25,7 @@ export interface UseWalletReturn {
   isConnecting: boolean;
   error: string | null;
   connect: () => Promise<void>;
-  disconnect: () => void;
+  disconnect: () => Promise<void>;
 }
 
 export function useWallet(): UseWalletReturn {
@@ -35,7 +35,11 @@ export function useWallet(): UseWalletReturn {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Use ref to avoid stale closure issues in event handlers
+  const accountRef = useRef<string | null>(null);
+
   const resetState = useCallback(() => {
+    accountRef.current = null;
     setAccount(null);
     setProvider(null);
     setSigner(null);
@@ -47,21 +51,25 @@ export function useWallet(): UseWalletReturn {
       const accs = accounts as string[];
       if (!accs || accs.length === 0) {
         resetState();
-      } else if (accs[0] !== account) {
-        const eth = getEthereum();
-        if (eth) {
-          const p = new BrowserProvider(eth);
-          setProvider(p);
-          setAccount(accs[0]);
-          p.getSigner().then(setSigner).catch(console.error);
-        }
+        return;
+      }
+      const newAccount = accs[0];
+      // Only update if account actually changed
+      if (newAccount === accountRef.current) return;
+      accountRef.current = newAccount;
+
+      const eth = getEthereum();
+      if (eth) {
+        const p = new BrowserProvider(eth);
+        setProvider(p);
+        setAccount(newAccount);
+        p.getSigner().then(setSigner).catch(console.error);
       }
     },
-    [account, resetState]
+    [resetState]
   );
 
   const handleChainChanged = useCallback(() => {
-    // Force a page reload on network change to reset all contract state
     window.location.reload();
   }, []);
 
@@ -77,6 +85,7 @@ export function useWallet(): UseWalletReturn {
       const accounts = (await eth.request({ method: "eth_requestAccounts" })) as string[];
       const p = new BrowserProvider(eth);
       const s = await p.getSigner();
+      accountRef.current = accounts[0];
       setProvider(p);
       setAccount(accounts[0]);
       setSigner(s);
@@ -92,7 +101,19 @@ export function useWallet(): UseWalletReturn {
     }
   }, []);
 
-  const disconnect = useCallback(() => {
+  const disconnect = useCallback(async () => {
+    const eth = getEthereum();
+    if (eth) {
+      try {
+        // Revoke MetaMask permissions so the wallet shows "not connected"
+        await eth.request({
+          method: "wallet_revokePermissions",
+          params: [{ eth_accounts: {} }],
+        });
+      } catch {
+        // wallet_revokePermissions is not supported by all wallets
+      }
+    }
     resetState();
   }, [resetState]);
 
@@ -104,6 +125,7 @@ export function useWallet(): UseWalletReturn {
     eth.request({ method: "eth_accounts" }).then((accounts) => {
       const accs = accounts as string[];
       if (accs.length > 0) {
+        accountRef.current = accs[0];
         const p = new BrowserProvider(eth);
         setProvider(p);
         setAccount(accs[0]);
