@@ -63,7 +63,12 @@ export function useWallet(): UseWalletReturn {
         const p = new BrowserProvider(eth);
         setProvider(p);
         setAccount(newAccount);
-        p.getSigner().then(setSigner).catch(console.error);
+        p.getSigner()
+          .then(setSigner)
+          .catch((e) => {
+            console.error("Signer unavailable after account change:", e);
+            resetState();
+          });
       }
     },
     [resetState],
@@ -122,14 +127,19 @@ export function useWallet(): UseWalletReturn {
     if (!eth) return;
 
     // Check if already connected
-    eth.request({ method: "eth_accounts" }).then((accounts) => {
+    eth.request({ method: "eth_accounts" }).then(async (accounts) => {
       const accs = accounts as string[];
       if (accs.length > 0) {
-        accountRef.current = accs[0];
-        const p = new BrowserProvider(eth);
-        setProvider(p);
-        setAccount(accs[0]);
-        p.getSigner().then(setSigner).catch(console.error);
+        try {
+          const p = new BrowserProvider(eth);
+          const s = await p.getSigner();
+          accountRef.current = accs[0];
+          setProvider(p);
+          setAccount(accs[0]);
+          setSigner(s);
+        } catch (e) {
+          console.error("Wallet unavailable on init:", e);
+        }
       }
     });
 

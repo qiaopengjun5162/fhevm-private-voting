@@ -13,15 +13,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { VotingPhase, VotingState } from "@/types";
+import { isWalletUnavailableError } from "@/lib/utils";
 
 interface OwnerPanelProps {
   contract: Contract | null;
   state: VotingState | null;
   phase: VotingPhase | null;
   account: string | null;
+  onReconnect?: () => Promise<void>;
 }
 
-export function OwnerPanel({ contract, state, phase, account }: OwnerPanelProps) {
+export function OwnerPanel({ contract, state, phase, account, onReconnect }: OwnerPanelProps) {
   const [publishing, setPublishing] = useState(false);
   const [pubError, setPubError] = useState<string | null>(null);
   const [pubSuccess, setPubSuccess] = useState(false);
@@ -48,7 +50,11 @@ export function OwnerPanel({ contract, state, phase, account }: OwnerPanelProps)
       await tx.wait();
       setPubSuccess(true);
     } catch (e) {
-      setPubError(e instanceof Error ? e.message : "Failed to publish results.");
+      if (isWalletUnavailableError(e)) {
+        setPubError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+      } else {
+        setPubError(e instanceof Error ? e.message : "Failed to publish results.");
+      }
     } finally {
       setPublishing(false);
     }
@@ -65,7 +71,11 @@ export function OwnerPanel({ contract, state, phase, account }: OwnerPanelProps)
       setGrantSuccess(true);
       setGrantAddress("");
     } catch (e) {
-      setGrantError(e instanceof Error ? e.message : "Failed to grant access.");
+      if (isWalletUnavailableError(e)) {
+        setGrantError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+      } else {
+        setGrantError(e instanceof Error ? e.message : "Failed to grant access.");
+      }
     } finally {
       setGranting(false);
     }

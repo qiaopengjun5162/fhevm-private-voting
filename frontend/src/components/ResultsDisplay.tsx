@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { VotingPhase, VotingState, NetworkInfo } from "@/types";
 import type { UseFHEReturn } from "@/hooks/useFHE";
+import { isWalletUnavailableError } from "@/lib/utils";
 
 interface ResultsDisplayProps {
   state: VotingState | null;
   phase: VotingPhase | null;
   fhe: UseFHEReturn;
   network: NetworkInfo;
+  onReconnect?: () => Promise<void>;
 }
 
 export function ResultsDisplay({
@@ -25,6 +27,7 @@ export function ResultsDisplay({
   phase,
   fhe,
   network,
+  onReconnect,
 }: ResultsDisplayProps) {
   const [decrypting, setDecrypting] = useState(false);
   const [results, setResults] = useState<number[] | null>(null);
@@ -58,7 +61,11 @@ export function ResultsDisplay({
         }
       } catch (e) {
         decryptedResults.push(0);
-        failures.push(`${label}: ${e instanceof Error ? e.message : "decryption failed"}`);
+        if (isWalletUnavailableError(e)) {
+          failures.push(`${label}: MetaMask is locked or disconnected`);
+        } else {
+          failures.push(`${label}: ${e instanceof Error ? e.message : "decryption failed"}`);
+        }
       }
     }
 

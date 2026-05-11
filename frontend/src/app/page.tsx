@@ -84,12 +84,14 @@ export default function HomePage() {
         state={votingState.state}
         phase={votingState.phase}
         account={wallet.account}
+        onReconnect={wallet.connect}
       />
       <ResultsDisplay
         state={votingState.state}
         phase={votingState.phase}
         fhe={fhe}
         network={network}
+        onReconnect={wallet.connect}
       />
     </div>
   );

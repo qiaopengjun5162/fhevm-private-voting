@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Shield, ShieldCheck } from "lucide-react";
 import type { VotingPhase, NetworkInfo, EncryptResult } from "@/types";
 import type { UseFHEReturn } from "@/hooks/useFHE";
+import { isWalletUnavailableError } from "@/lib/utils";
 
 interface VoteFormProps {
   phase: VotingPhase | null;
@@ -68,11 +69,15 @@ export function VoteForm({
       setTxHash(tx.hash);
       setStatus("success");
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Vote failed";
-      if (message.includes("User rejected") || message.includes("denied")) {
-        setError("Transaction rejected in wallet.");
+      if (isWalletUnavailableError(e)) {
+        setError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
       } else {
-        setError(message);
+        const message = e instanceof Error ? e.message : "Vote failed";
+        if (message.includes("User rejected") || message.includes("denied")) {
+          setError("Transaction rejected in wallet.");
+        } else {
+          setError(message);
+        }
       }
       setStatus("error");
     }

@@ -16,6 +16,14 @@ export function formatTimestamp(seconds: bigint | number): string {
 
 export type VotingPhase = "before_start" | "live" | "ended" | "results_published";
 
+export function isWalletUnavailableError(e: unknown): boolean {
+  const str = String(e);
+  return (
+    str.includes("wallet must has at least one account") ||
+    (typeof e === "object" && e !== null && "info" in e && typeof (e as Record<string, unknown>).info === "object")
+  );
+}
+
 export function computePhase(startTime: bigint, endTime: bigint, resultsPublished: boolean): VotingPhase {
   const now = Math.floor(Date.now() / 1000);
   if (resultsPublished) return "results_published";
