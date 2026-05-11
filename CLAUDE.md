@@ -198,16 +198,18 @@ indefinitely. Vercel's built-in tsc cannot resolve `@/*` path aliases, so `ignor
 
 **Multiple wallet extensions (CRITICAL)**: Having multiple browser wallet extensions (MetaMask + SafePal, OKX, Rabby,
 Coinbase, etc.) causes serious problems:
+
 - `window.ethereum` gets overridden by competing extensions, producing non-standard RPC errors ("wallet must has at
   least one account", "Failed to connect wallet")
 - React #418 hydration mismatches — different extensions inject at different times during page load, causing
   server/client DOM divergence
 - **Confirmed culprits**: SafePal extension (most common), Auro, Pallad
-- **Solution**: Disable ALL wallet extensions except the one being used. Use browser incognito/private mode for a
-  clean environment with only MetaMask enabled.
+- **Solution**: Disable ALL wallet extensions except the one being used. Use browser incognito/private mode for a clean
+  environment with only MetaMask enabled.
 - **Validation**: If the dApp works in incognito mode but not normal mode, it's a multi-wallet conflict.
 
 **React #418 Hydration Mismatch**: Web3 dApps MUST guard against hydration mismatches:
+
 - `typeof window !== "undefined"` checks during React render phase cause server/client DOM divergence
 - **Fix**: Use a top-level `mounted` guard in the main page component — render an empty `<div>` until `useEffect`
   confirms client-side mount is complete
@@ -215,6 +217,7 @@ Coinbase, etc.) causes serious problems:
 - See `frontend/src/app/page.tsx:37-41` (hydration guard) and `frontend/src/components/WalletConnector.tsx:22-24`
 
 **Signer race condition**: `useWallet` must set account, provider, and signer atomically:
+
 - Setting `account`/`provider` before `getSigner()` completes creates a "fake connected" state — dApp shows connected
   but every RPC call fails
 - `getSigner()` must be awaited before any state is set. If it fails (MetaMask locked), keep state as "not connected"
@@ -222,8 +225,8 @@ Coinbase, etc.) causes serious problems:
 
 **Error display (toast vs inline)**: Transient user-action errors (vote, publish, grant, decrypt) should use
 `toast.error()` from sonner, not inline Alert boxes. Only persistent initialization errors (FHE SDK load failure,
-initial contract data load with no cached state) should show inline. Inline error Alerts clutter the UI and display
-raw ethers.js error strings that confuse users.
+initial contract data load with no cached state) should show inline. Inline error Alerts clutter the UI and display raw
+ethers.js error strings that confuse users.
 
 **Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but
 encrypted voting and decryption require Sepolia.
