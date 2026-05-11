@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Contract } from "ethers";
-import { computePhase } from "@/lib/utils";
+import { computePhase, isWalletUnavailableError } from "@/lib/utils";
 import { POLL_INTERVAL_MS } from "@/lib/config";
 import type { VotingPhase, VotingState } from "@/types";
 
@@ -20,6 +20,7 @@ export function useVotingState(contract: Contract | null, account: string | null
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refreshRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const hasLoadedRef = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!contract) {
@@ -71,11 +72,17 @@ export function useVotingState(contract: Contract | null, account: string | null
         encryptedTallies: tallies,
       });
       setPhase(currentPhase);
+      hasLoadedRef.current = true;
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to load voting data";
-      setError(message);
-      setState(null);
-      setPhase(null);
+      if (isWalletUnavailableError(e)) {
+        setError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+      } else {
+        setError(e instanceof Error ? e.message : "Failed to load voting data");
+      }
+      if (!hasLoadedRef.current) {
+        setState(null);
+        setPhase(null);
+      }
     } finally {
       setIsLoading(false);
     }

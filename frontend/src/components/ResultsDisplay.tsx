@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -31,19 +32,18 @@ export function ResultsDisplay({
 }: ResultsDisplayProps) {
   const [decrypting, setDecrypting] = useState(false);
   const [results, setResults] = useState<number[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   if (phase !== "results_published") return null;
   if (!state) return null;
 
   const handleDecrypt = async () => {
     setDecrypting(true);
-    setError(null);
     setResults(null);
 
     const n = Math.max(state.options.length, state.encryptedTallies.length);
     const decryptedResults: number[] = [];
-    const failures: string[] = [];
+    let walletError = false;
+    let otherErrors = 0;
 
     for (let i = 0; i < n; i++) {
       const label = state.options[i] ?? `Option ${i + 1}`;
@@ -62,15 +62,17 @@ export function ResultsDisplay({
       } catch (e) {
         decryptedResults.push(0);
         if (isWalletUnavailableError(e)) {
-          failures.push(`${label}: MetaMask is locked or disconnected`);
+          walletError = true;
         } else {
-          failures.push(`${label}: ${e instanceof Error ? e.message : "decryption failed"}`);
+          otherErrors++;
         }
       }
     }
 
-    if (failures.length > 0) {
-      setError(failures.join(" · "));
+    if (walletError) {
+      toast.error("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+    } else if (otherErrors > 0) {
+      toast.error(`${otherErrors} option(s) failed to decrypt.`);
     }
 
     setResults(decryptedResults);
@@ -130,12 +132,6 @@ export function ResultsDisplay({
         {fhe.error && (
           <Alert variant="destructive">
             <AlertDescription>{fhe.error}</AlertDescription>
-          </Alert>
-        )}
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

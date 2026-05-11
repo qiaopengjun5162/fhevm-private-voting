@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Contract, isAddress } from "ethers";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -25,12 +26,10 @@ interface OwnerPanelProps {
 
 export function OwnerPanel({ contract, state, phase, account, onReconnect }: OwnerPanelProps) {
   const [publishing, setPublishing] = useState(false);
-  const [pubError, setPubError] = useState<string | null>(null);
   const [pubSuccess, setPubSuccess] = useState(false);
 
   const [grantAddress, setGrantAddress] = useState("");
   const [granting, setGranting] = useState(false);
-  const [grantError, setGrantError] = useState<string | null>(null);
   const [grantSuccess, setGrantSuccess] = useState(false);
 
   const isOwner =
@@ -43,7 +42,6 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
   const handlePublish = async () => {
     if (!contract) return;
     setPublishing(true);
-    setPubError(null);
     setPubSuccess(false);
     try {
       const tx = await contract.publishResults();
@@ -51,9 +49,9 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
       setPubSuccess(true);
     } catch (e) {
       if (isWalletUnavailableError(e)) {
-        setPubError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+        toast.error("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
       } else {
-        setPubError(e instanceof Error ? e.message : "Failed to publish results.");
+        toast.error(e instanceof Error ? e.message : "Failed to publish results.");
       }
     } finally {
       setPublishing(false);
@@ -63,7 +61,6 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
   const handleGrantAccess = async () => {
     if (!contract || !isAddress(grantAddress)) return;
     setGranting(true);
-    setGrantError(null);
     setGrantSuccess(false);
     try {
       const tx = await contract.grantResultAccess(grantAddress);
@@ -72,9 +69,9 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
       setGrantAddress("");
     } catch (e) {
       if (isWalletUnavailableError(e)) {
-        setGrantError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+        toast.error("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
       } else {
-        setGrantError(e instanceof Error ? e.message : "Failed to grant access.");
+        toast.error(e instanceof Error ? e.message : "Failed to grant access.");
       }
     } finally {
       setGranting(false);
@@ -96,11 +93,6 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
             <Button onClick={handlePublish} disabled={publishing}>
               {publishing ? "Publishing..." : "Publish Results"}
             </Button>
-            {pubError && (
-              <Alert variant="destructive">
-                <AlertDescription>{pubError}</AlertDescription>
-              </Alert>
-            )}
             {pubSuccess && (
               <Alert className="border-green-500/30 bg-green-500/10">
                 <AlertDescription className="text-green-400">Results published successfully.</AlertDescription>
@@ -122,10 +114,7 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
                 <Input
                   placeholder="Viewer address (0x...)"
                   value={grantAddress}
-                  onChange={(e) => {
-                    setGrantAddress(e.target.value);
-                    setGrantError(null);
-                  }}
+                  onChange={(e) => setGrantAddress(e.target.value)}
                 />
                 <Button
                   onClick={handleGrantAccess}
@@ -134,11 +123,6 @@ export function OwnerPanel({ contract, state, phase, account, onReconnect }: Own
                   {granting ? "Granting..." : "Grant Access"}
                 </Button>
               </div>
-              {grantError && (
-                <Alert variant="destructive">
-                  <AlertDescription>{grantError}</AlertDescription>
-                </Alert>
-              )}
               {grantSuccess && (
                 <Alert className="border-green-500/30 bg-green-500/10">
                   <AlertDescription className="text-green-400">Access granted successfully.</AlertDescription>

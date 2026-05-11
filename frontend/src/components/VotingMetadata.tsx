@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -33,6 +35,16 @@ export function VotingMetadata({
   error,
   onRetry,
 }: VotingMetadataProps) {
+  const prevErrorRef = useRef(error);
+
+  useEffect(() => {
+    // Show toast when polling error occurs (state already loaded)
+    if (error && state && error !== prevErrorRef.current) {
+      toast.error(error);
+    }
+    prevErrorRef.current = error;
+  }, [error, state]);
+
   if (isLoading && !state) {
     return (
       <Card>
@@ -48,7 +60,7 @@ export function VotingMetadata({
     );
   }
 
-  if (error) {
+  if (error && !state) {
     return (
       <Card className="border-red-500">
         <CardHeader>

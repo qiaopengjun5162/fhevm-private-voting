@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Contract } from "ethers";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Shield, ShieldCheck } from "lucide-react";
@@ -40,7 +41,6 @@ export function VoteForm({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [status, setStatus] = useState<VoteStatus>("idle");
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const canVote = phase === "live" && !hasVoted;
 
@@ -48,7 +48,6 @@ export function VoteForm({
     if (selectedIndex === null || !contract) return;
 
     setStatus("encrypting");
-    setError(null);
     setTxHash(null);
 
     try {
@@ -70,13 +69,13 @@ export function VoteForm({
       setStatus("success");
     } catch (e) {
       if (isWalletUnavailableError(e)) {
-        setError("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
+        toast.error("MetaMask is locked or disconnected. Please unlock MetaMask and try again.");
       } else {
         const message = e instanceof Error ? e.message : "Vote failed";
         if (message.includes("User rejected") || message.includes("denied")) {
-          setError("Transaction rejected in wallet.");
+          toast.error("Transaction rejected in wallet.");
         } else {
-          setError(message);
+          toast.error(message);
         }
       }
       setStatus("error");
@@ -177,12 +176,6 @@ export function VoteForm({
       {fhe.error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{fhe.error}</AlertDescription>
-        </Alert>
-      )}
-
-      {status === "error" && error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
