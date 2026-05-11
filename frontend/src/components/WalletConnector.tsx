@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogOut, Wallet } from "lucide-react";
@@ -15,7 +16,18 @@ export function WalletConnector({
   connect,
   disconnect,
 }: WalletConnectorProps) {
-  const ethereumAvailable = typeof window !== "undefined" && !!window.ethereum;
+  const [mounted, setMounted] = useState(false);
+  const [ethereumAvailable, setEthereumAvailable] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setEthereumAvailable(typeof window !== "undefined" && !!window.ethereum);
+  }, []);
+
+  // Avoid hydration mismatch: render nothing until mounted
+  if (!mounted) {
+    return <div className="h-11" />;
+  }
 
   if (!ethereumAvailable) {
     return (
