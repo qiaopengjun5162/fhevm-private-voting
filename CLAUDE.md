@@ -152,24 +152,24 @@ frontend/src/
     layout.tsx          — Root layout with Geist font, Toaster
     page.tsx            — Main page, composes all components
   hooks/
-    useWallet.ts        — MetaMask connect/disconnect/accountsChanged
+    useWallet.ts        — MetaMask connect/disconnect/accountsChanged (atomic signer setup)
     useNetwork.ts       — chain ID detection, read-only vs Sepolia
     useContract.ts      — ethers.js Contract instance from address + signer
-    useVotingState.ts   — Fetches + polls voting metadata/phase
+    useVotingState.ts   — Fetches + polls voting metadata/phase (preserves state on polling errors)
     useFHE.ts           — Lazy-loads @zama-fhe/relayer-sdk, encrypt/decrypt
   components/
-    WalletConnector.tsx
+    WalletConnector.tsx     — mounted guard to avoid hydration mismatch
     NetworkBanner.tsx
     ContractAddressInput.tsx
-    VotingMetadata.tsx      — Title, options, timestamps, phase badge
+    VotingMetadata.tsx      — Title, options, timestamps, phase badge; toast for polling errors
     PhaseBadge.tsx
-    VoteForm.tsx            — Radio selection + encrypt + submit tx
-    OwnerPanel.tsx          — publishResults() + grantResultAccess()
-    ResultsDisplay.tsx      — Decrypt tallies and show bar chart
+    VoteForm.tsx            — Radio selection + encrypt + submit tx; toast errors
+    OwnerPanel.tsx          — publishResults() + grantResultAccess(); toast errors
+    ResultsDisplay.tsx      — Decrypt tallies and show bar chart; toast errors
   lib/
     abi.ts              — Full PrivateVoting ABI (hand-written for ethers v6)
     config.ts           — Chain IDs, relayer URL, storage keys, poll interval
-    utils.ts            — cn(), truncateAddress(), formatTimestamp(), computePhase()
+    utils.ts            — cn(), truncateAddress(), formatTimestamp(), computePhase(), isWalletUnavailableError()
   types/
     index.ts            — VotingState, WalletState, NetworkInfo, EncryptResult
 ```
@@ -196,9 +196,34 @@ indefinitely. Vercel's built-in tsc cannot resolve `@/*` path aliases, so `ignor
 
 ### Known issues
 
-**Multiple wallet extensions**: Having multiple browser wallet extensions (MetaMask + others) causes
-`Cannot redefine property: ethereum` errors and hydration mismatches. Disable all wallet extensions except the one being
-used.
+**Multiple wallet extensions (CRITICAL)**: Having multiple browser wallet extensions (MetaMask + SafePal, OKX, Rabby,
+Coinbase, etc.) causes serious problems:
+- `window.ethereum` gets overridden by competing extensions, producing non-standard RPC errors ("wallet must has at
+  least one account", "Failed to connect wallet")
+- React #418 hydration mismatches — different extensions inject at different times during page load, causing
+  server/client DOM divergence
+- **Confirmed culprits**: SafePal extension (most common), Auro, Pallad
+- **Solution**: Disable ALL wallet extensions except the one being used. Use browser incognito/private mode for a
+  clean environment with only MetaMask enabled.
+- **Validation**: If the dApp works in incognito mode but not normal mode, it's a multi-wallet conflict.
+
+**React #418 Hydration Mismatch**: Web3 dApps MUST guard against hydration mismatches:
+- `typeof window !== "undefined"` checks during React render phase cause server/client DOM divergence
+- **Fix**: Use a top-level `mounted` guard in the main page component — render an empty `<div>` until `useEffect`
+  confirms client-side mount is complete
+- **Fix**: In components that access `window.ethereum`, check availability in `useEffect`, not during render
+- See `frontend/src/app/page.tsx:37-41` (hydration guard) and `frontend/src/components/WalletConnector.tsx:22-24`
+
+**Signer race condition**: `useWallet` must set account, provider, and signer atomically:
+- Setting `account`/`provider` before `getSigner()` completes creates a "fake connected" state — dApp shows connected
+  but every RPC call fails
+- `getSigner()` must be awaited before any state is set. If it fails (MetaMask locked), keep state as "not connected"
+- Same pattern applies to `handleAccountsChanged`: if `getSigner()` fails after an account change, call `resetState()`
+
+**Error display (toast vs inline)**: Transient user-action errors (vote, publish, grant, decrypt) should use
+`toast.error()` from sonner, not inline Alert boxes. Only persistent initialization errors (FHE SDK load failure,
+initial contract data load with no cached state) should show inline. Inline error Alerts clutter the UI and display
+raw ethers.js error strings that confuse users.
 
 **Localhost FHE limitation**: Local Hardhat node uses mock encryption — `title()`, `getOptions()`, etc. work, but
 encrypted voting and decryption require Sepolia.
