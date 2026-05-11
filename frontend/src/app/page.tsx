@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { useWallet } from "@/hooks/useWallet";
 import { useNetwork } from "@/hooks/useNetwork";
@@ -30,6 +30,15 @@ export default function HomePage() {
     network,
     wallet.account
   );
+
+  // Prevent hydration mismatch: all hooks must be called above this line.
+  // Render nothing until client-side mount completes, ensuring window.ethereum
+  // and other browser APIs are available before any component renders.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) {
+    return <div className="min-h-screen bg-background" />;
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto space-y-5 pb-16">
